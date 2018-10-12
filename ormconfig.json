@@ -1,0 +1,24 @@
+{
+    "name": "default",
+    "type": "postgres",
+    "host": "localhost",
+    "port": 5432,
+    "username": "grigori",
+    "password": "grigori",
+    "database": "test",
+    "synchronize": true,
+    "entities": [
+      "src/db/entity/*.js"
+    ],
+    "subscribers": [
+      "src/db/subscriber/*.js"
+    ],
+    "migrations": [
+      "dist/migration/*.js"
+    ],
+    "cli": {
+      "entitiesDir": "dist/entity",
+      "migrationsDir": "dist/migration",
+      "subscribersDir": "dist/subscriber"
+    }
+  }

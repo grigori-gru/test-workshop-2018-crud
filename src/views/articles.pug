@@ -1,0 +1,14 @@
+block content
+  if articles.length > 0
+      table.table.table-info
+        tr
+          th Articles
+        for aticle in articles
+          tr
+            td
+                a(href='/articles/show', class=button)= aticle.name
+            td
+                a(href='/articles/edit', class=button) Edit
+                a(href='/articles/delete', class=button) Delete
+  else
+      | There is no any articles...
