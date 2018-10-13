@@ -1,45 +1,90 @@
 import debug from 'debug';
+import User from '../db/entity/user';
 
-const logger = debug('app');
-
+const log = debug('app');
+const error = debug('app:error');
 export default (router, db) => router
+    .get('/favicon.ico', (req, res) => res.status(204))
+
     .get('/', (req, res) => res.render('index'))
 
     .get('/articles', async (req, res) => {
-        const conDb = await db;
-        console.log(conDb);
-        const articles = await conDb.find();
-        console.log(articles);
-        res.render('articles', { articles });
+        try {
+            const articles = await db.find();
+            res.render('articles', { articles });
+        } catch (err) {
+            error(err);
+        }
     })
 
     .get('/articles/new', async (req, res) => {
         res.render('new');
     })
 
+    .get('/articles/:name/edit', async (req, res) => {
+        const { name } = req.params;
+        log('usersIdEdit:', name);
+        const article = await db.findOne({ name });
+        res.render('edit', { article });
+    })
+
     .get('/articles/:name', async (req, res) => {
         const { name } = req.params;
-        const article = await db.findByName(name);
-        res.render('show', { article });
+        // log('name is', name);
+        const article = await db.findOne({ name });
+        // log('article is', article.body);
+        res.render('show', { body: article.body });
     })
 
     .post('/articles', async (req, res) => {
         const { body } = req;
-        logger('body', body);
+        // logger('body', body);
         try {
-            await db.save(body);
-            res.redirect(`show/${body.name}`);
-        } catch (error) {
-            logger('error', error);
+            const user = new User();
+            user.name = body.name;
+            user.body = body.body;
+
+            const post = await db.save(user);
+            log('Post has been saved', post);
+
+            res.redirect(`articles/${body.name}`);
+        } catch (err) {
+            error('err', err);
             res.render('new');
             res.status = 422;
         }
+    })
+
+    .put('/articles/:name', async (req, res) => {
+        const { body } = req;
+        const { name } = req.params;
+        log('req.params', req.params);
+        try {
+            const article = await db.findOne({ name });
+            log('an old rticle is', article);
+            const updateData = { ...article, ...body };
+            log('article to update is', updateData);
+            await db.save(updateData);
+
+            res.redirect('/articles');
+        } catch (err) {
+            error('err', err);
+            res.render('articles');
+            res.status = 422;
+        }
+    })
+
+    .delete('/articles/:name', async (req, res) => {
+        const { name } = req.params;
+        try {
+            const article = await db.findOne({ name });
+            log('article to remove is', article.body);
+            await db.remove(article);
+
+            res.redirect('/articles');
+        } catch (err) {
+            error('err', err);
+            res.render('articles');
+            res.status = 422;
+        }
     });
-
-//     .put('/articles/:name', async (req, res) => {
-
-//     })
-
-//     .delete('/articles/:name', async (req, res) => {
-
-// });

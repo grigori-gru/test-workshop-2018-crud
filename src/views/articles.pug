@@ -3,12 +3,13 @@ block content
       table.table.table-info
         tr
           th Articles
-        for aticle in articles
+        for article in articles
           tr
             td
-                a(href='/articles/show', class=button)= aticle.name
+                a(href=`/articles/${article.name}`, class=button)= article.name
             td
-                a(href='/articles/edit', class=button) Edit
-                a(href='/articles/delete', class=button) Delete
+                form(action=`/articles/${article.name}?_method=DELETE` method='POST')
+                    button Delete
+                a(href=`/articles/${article.name}/edit/`, class=button) Edit
   else
       | There is no any articles...

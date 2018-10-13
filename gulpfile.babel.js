@@ -3,6 +3,7 @@ import startServer from './src';
 
 gulp.task('default', console.log('hello!'));
 
-gulp.task('server', () => {
-    startServer().listen(process.env.PORT || 3000);
+gulp.task('server', async () => {
+    const server = await startServer();
+    server.listen(process.env.PORT || 3000);
 });

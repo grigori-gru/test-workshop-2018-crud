@@ -1,0 +1,9 @@
+block content
+    form(action=`/articles/${article.name}?_method=PUT` method='POST')
+        div.form-group
+            label(for='name') Name:
+            input#name.form-control(type='text', placeholder=`${article.name}` name='name')
+        div.form-group
+            label(for='body') Body:
+            input.form-control(type='text', placeholder=`${article.body}`, name='body')
+        button.btn.btn-primary(type='submit') Update article

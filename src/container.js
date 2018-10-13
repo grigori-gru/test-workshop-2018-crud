@@ -1,27 +1,17 @@
+import logger from 'debug';
 import { createConnection } from 'typeorm';
 import User from './db/entity/user';
 
-// import dotenv from 'dotenv';
+const log = logger('app');
 
-// dotenv.config();
-// let dbUrl;
+export default async () => {
+    try {
+        const connection = await createConnection();
+        log('Connection created');
 
-// switch (process.env.NODE_ENV) {
-// case 'production':
-//     dbUrl = process.env.DATABASE_URL;
-//     break;
-// case 'test':
-//     dbUrl = process.env.DATABASE_URL_TEST;
-//     break;
-// default:
-//     dbUrl = process.env.DATABASE_URL_DEV;
-// }
-
-export default createConnection()
-    .then((connection) => {
-        console.log('We get connection');
         return connection.getRepository(User);
-    })
-    .catch((err) => {
-        console.error(err);
-    });
+    } catch (error) {
+        log(error);
+        return false;
+    }
+};
