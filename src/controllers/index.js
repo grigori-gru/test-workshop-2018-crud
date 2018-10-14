@@ -10,7 +10,7 @@ export default (router, db) => router
 
     .get('/articles', async (req, res) => {
         try {
-            const articles = await db.find();
+            const articles = await db.find(User);
             res.render('articles', { articles });
         } catch (err) {
             error(err);
@@ -24,16 +24,18 @@ export default (router, db) => router
     .get('/articles/:name/edit', async (req, res) => {
         const { name } = req.params;
         log('usersIdEdit:', name);
-        const article = await db.findOne({ name });
+        const article = await db.findOne(User, { name });
         res.render('edit', { article });
     })
 
     .get('/articles/:name', async (req, res) => {
         const { name } = req.params;
-        // log('name is', name);
-        const article = await db.findOne({ name });
-        // log('article is', article.body);
-        res.render('show', { body: article.body });
+        const article = await db.findOne(User, { name });
+        if (article) {
+            res.render('show', { body: article.body });
+        }
+        res.render('articles');
+        res.status = 422;
     })
 
     .post('/articles', async (req, res) => {
@@ -60,11 +62,11 @@ export default (router, db) => router
         const { name } = req.params;
         log('req.params', req.params);
         try {
-            const article = await db.findOne({ name });
+            const article = await db.findOne(User, { name });
             log('an old rticle is', article);
             const updateData = { ...article, ...body };
             log('article to update is', updateData);
-            await db.save(updateData);
+            await db.save(User, updateData);
 
             res.redirect('/articles');
         } catch (err) {
@@ -77,7 +79,7 @@ export default (router, db) => router
     .delete('/articles/:name', async (req, res) => {
         const { name } = req.params;
         try {
-            const article = await db.findOne({ name });
+            const article = await db.findOne(User, { name });
             log('article to remove is', article.body);
             await db.remove(article);
 

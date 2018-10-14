@@ -1,19 +1,35 @@
-import { stub } from 'sinon';
+import getSupertest from 'supertest';
+import { createConnection } from 'typeorm';
 import getApp from '../src/app';
-
-const storageStub = {
-    find: stub(),
-    findOne: stub(),
-    save: stub(),
-    remove: stub(),
-};
-
-const app = getApp(storageStub);
-const supertest = require('supertest')(app);
+import { article } from './__fixtures__/test-data.json';
+import User from '../src/db/entity/user';
 
 describe('Test app', () => {
-    beforeEach(() => {
-        Object.values(storageStub).forEach(stubed => stubed.reset());
+    let queryRunner;
+    let connection;
+    let supertest;
+    let app;
+
+    beforeEach(async () => {
+        connection = await createConnection();
+        queryRunner = connection.createQueryRunner();
+        await queryRunner.connect();
+        await queryRunner.startTransaction();
+
+        app = getApp(queryRunner.manager);
+        supertest = getSupertest(app);
+
+        const user = new User();
+        user.name = article.name;
+        user.body = article.body;
+
+        await queryRunner.manager.save(user);
+    });
+
+    afterEach(async () => {
+        await queryRunner.rollbackTransaction();
+        await connection.close();
+        await queryRunner.release();
     });
 
     it('Expect GET empty route return 200', async () => {
@@ -23,49 +39,37 @@ describe('Test app', () => {
     });
 
     it('Expect GET articles return 200', async () => {
-        storageStub.find.resolves([]);
         await supertest
             .get('/articles')
             .expect(200);
     });
 
     it('Expect GET articles/:name return 200 if article exists', async () => {
-        const name = 'name';
-        storageStub.findOne.withArgs({ name }).resolves({ body: 'text' });
-
         await supertest
-            .get(`/articles/${name}`)
+            .get(`/articles/${article.name}`)
             .expect(200);
     });
 
     it('Expect POST article returns 200', async () => {
-        const name = 'name';
-        const body = 'body';
-        storageStub.save.resolves();
+        const data = { name: 'name', body: 'body' };
         await supertest
             .post('/articles')
-            .send({ name, body })
+            .send(data)
             .expect(302);
     });
 
     it('Expect DELETE articles return 302', async () => {
-        const name = 'name';
-        const data = { id: 1, name, body: 'body' };
-        storageStub.findOne.resolves(data);
-        storageStub.remove.withArgs(data).resolves();
         await supertest
-            .delete(`/articles/${name}`)
+            .delete(`/articles/${article.name}`)
             .expect(302);
     });
 
     it('Expect PUT article return 302', async () => {
-        const name = 'name';
-        const data = { id: 1, name, body: 'body' };
-        const dataToUpdate = { id: 1, name: 'newname', body: 'body' };
-        storageStub.findOne.resolves(data);
-        storageStub.save.withArgs(dataToUpdate).resolves();
+        const { name } = article;
+        const data = { name, body: 'new body' };
         await supertest
             .put(`/articles/${name}`)
+            .send(data)
             .expect(302);
     });
 });

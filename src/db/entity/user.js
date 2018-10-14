@@ -1,6 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 
-export default @Entity() class Post {
+export default @Entity() class User {
     @PrimaryGeneratedColumn()
     id = undefined;
 
